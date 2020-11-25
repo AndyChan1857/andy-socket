@@ -103,7 +103,6 @@ export default class MiniSocket {
     // 没连接上会一直重连，设置延迟避免请求过多
     this.timeoutnum && clearTimeout(this.timeoutnum);
     this.timeoutnum = setTimeout(() => {
-      // 新连接
       this.initWebSocket();
       this.lockReconnect = false;
     }, 5000);
