@@ -1,15 +1,16 @@
 export default class MiniSocket {
   private minisocket!: WebSocket // socket实例对象
   private timeoutObj!: number // 心跳倒计时
-  private serverTimeoutObj!: number // 心跳轮询
-  private timeout: number = 28 * 1000 // 心跳时间
+  private serverTimeoutObj!: any // 心跳轮询
+  private timeout!: number // 心跳时间
   private lockReconnect: boolean = false // 节流阀
-  private timeoutnum!: number
+  private timeoutnum!: any
   private destroyedFlag: boolean = false // 行为关闭配置
   private options!: Options // 配置参数
 
   constructor(options: Options) {
     this.options = options
+    this.timeout = (options.time || 28) * 1000  
     this.initWebSocket()
   }
 
@@ -72,8 +73,8 @@ export default class MiniSocket {
       // 发送一个心跳，后端收到后，返回一个心跳消息，
       if (this.minisocket.readyState === 1) {
         // 特殊心跳字段处理
-        if (this.options.pingData) {
-          this.minisocket.send(JSON.stringify(this.options.pingData))
+        if (this.options.sendData) {
+          this.minisocket.send(JSON.stringify(this.options.sendData))
         } else {
           this.minisocket.send("ping");
         }
@@ -112,5 +113,6 @@ export default class MiniSocket {
 interface Options {
   url: string
   callback: (res: any) => (void)
-  pingData?: object
+  sendData?: object | string,
+  time?: number
 }
