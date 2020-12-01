@@ -49,7 +49,6 @@ export default class MiniSocket {
       try {
         let data = JSON.parse(res.data)
         callback && callback(data)
-
       } catch (error) {
         callback && callback(res.data)
       }
