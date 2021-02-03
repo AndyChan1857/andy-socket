@@ -47,7 +47,7 @@ export default class MiniSocket {
     return (res: any) => {
       // 重置心跳
       this.reset()
-      if( res.data === '连接成功'  ) {
+      if( res.data === '连接成功' ) {
         // 是否第一次初始化
         if( !this.initFlag ) {
           this.options.onSuccess && this.options.onSuccess(res.data)

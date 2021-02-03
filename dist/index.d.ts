@@ -7,6 +7,7 @@ export default class MiniSocket {
     private timeoutnum;
     private destroyedFlag;
     private options;
+    private initFlag;
     constructor(options: Options);
     initWebSocket(): void;
     onopen(): void;
@@ -22,6 +23,9 @@ export default class MiniSocket {
 interface Options {
     url: string;
     callback: (res: any) => (void);
-    pingData?: object;
+    sendData?: object | string;
+    time?: number;
+    onSuccess?: (res: any) => (void);
+    onError?: () => (void);
 }
 export {};

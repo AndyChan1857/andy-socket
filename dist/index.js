@@ -2,10 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var MiniSocket = /** @class */ (function () {
     function MiniSocket(options) {
-        this.timeout = 28 * 1000; // 心跳时间
         this.lockReconnect = false; // 节流阀
         this.destroyedFlag = false; // 行为关闭配置
+        this.initFlag = false;
         this.options = options;
+        this.timeout = (options.time || 28) * 1000;
         this.initWebSocket();
     }
     // 初始化socket
@@ -29,6 +30,7 @@ var MiniSocket = /** @class */ (function () {
     MiniSocket.prototype.onerror = function () {
         // 断开重连
         this.reconnect();
+        this.options.onError && this.options.onError();
     };
     // 消息通知
     MiniSocket.prototype.onMessage = function (callback) {
@@ -36,7 +38,15 @@ var MiniSocket = /** @class */ (function () {
         return function (res) {
             // 重置心跳
             _this.reset();
-            if (res.data === '连接成功' || res.data === 'ping') {
+            if (res.data === '连接成功') {
+                // 是否第一次初始化
+                if (!_this.initFlag) {
+                    _this.options.onSuccess && _this.options.onSuccess(res.data);
+                    _this.initFlag = true;
+                }
+                return;
+            }
+            if (res.data === 'ping') {
                 return;
             }
             try {
@@ -64,8 +74,8 @@ var MiniSocket = /** @class */ (function () {
             // 发送一个心跳，后端收到后，返回一个心跳消息，
             if (_this.minisocket.readyState === 1) {
                 // 特殊心跳字段处理
-                if (_this.options.pingData) {
-                    _this.minisocket.send(JSON.stringify(_this.options.pingData));
+                if (_this.options.sendData) {
+                    _this.minisocket.send(JSON.stringify(_this.options.sendData));
                 }
                 else {
                     _this.minisocket.send("ping");
@@ -98,7 +108,6 @@ var MiniSocket = /** @class */ (function () {
         // 没连接上会一直重连，设置延迟避免请求过多
         this.timeoutnum && clearTimeout(this.timeoutnum);
         this.timeoutnum = setTimeout(function () {
-            // 新连接
             _this.initWebSocket();
             _this.lockReconnect = false;
         }, 5000);
