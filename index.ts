@@ -7,6 +7,7 @@ export default class MiniSocket {
   private timeoutnum!: any
   private destroyedFlag: boolean = false // 行为关闭配置
   private options!: Options // 配置参数
+  private initFlag: boolean = false
 
   constructor(options: Options) {
     this.options = options
@@ -38,6 +39,7 @@ export default class MiniSocket {
   onerror() {
     // 断开重连
     this.reconnect();
+    this.options.onError && this.options.onError()
   }
 
   // 消息通知
@@ -45,7 +47,17 @@ export default class MiniSocket {
     return (res: any) => {
       // 重置心跳
       this.reset()
-      if (res.data === '连接成功' || res.data === 'ping') { return }
+      if( res.data === '连接成功'  ) {
+        // 是否第一次初始化
+        if( !this.initFlag ) {
+          this.options.onSuccess && this.options.onSuccess(res.data)
+          this.initFlag = true
+        }
+        return 
+      }
+      if( res.data === 'ping') {
+        return 
+      }
       try {
         let data = JSON.parse(res.data)
         callback && callback(data)
@@ -113,5 +125,7 @@ interface Options {
   url: string
   callback: (res: any) => (void)
   sendData?: object | string,
-  time?: number
+  time?: number,
+  onSuccess?: (res: any) => (void)
+  onError?: () => (void)
 }
